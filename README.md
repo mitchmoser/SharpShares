@@ -43,6 +43,7 @@ execute-assembly /path/to/SharpShares.exe
 [r] \\DC-01\Shared Folders
 [r] \\DC-01\SYSVOL
 [r] \\DC-01\Users
+[w] \\WEB-01\wwwroot
 [r] \\DESKTOP\ADMIN$
 [r] \\DESKTOP\C$
 [+] Finished Enumerating Shares
