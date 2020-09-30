@@ -1,22 +1,31 @@
 # SharpShares
-Multithreaded C# .NET Assembly to enumerate accessible network shares in the current domain
+Multithreaded C# .NET Assembly to enumerate accessible network shares in a domain
 
 Built upon [djhohnstein's SharpShares](https://github.com/djhohnstein/SharpShares) project
 
 ```
 > .\SharpShares.exe help
 
-█▀ █░█ ▄▀█ █▀█ █▀█ █▀ █░█ ▄▀█ █▀█ █▀▀ █▀
-▄█ █▀█ █▀█ █▀▄ █▀▀ ▄█ █▀█ █▀█ █▀▄ ██▄ ▄█
+█▀ █ █ ▄▀█ █▀█ █▀█ █▀ █ █ ▄▀█ █▀█ █▀▀ █▀
+▄█ █▀█ █▀█ █▀▄ █▀▀ ▄█ █▀█ █▀█ █▀▄ ██▄ ▄█
 
 Usage:
     SharpShares.exe
     or w/ optional arguments:
-    SharpShares.exe /threads:50 /filter /verbose
+    SharpShares.exe /threads:50 /ldap:servers /ou:"OU=Special Servers,DC=example,DC=local" /filter /verbose /outfile:C:\path\to\file.txt
 
 Optional Arguments:
-    /threads  - specify maximum number of parallel threads (default=25)
-    /filter   - exclude SYSVOL & NETLOGON shares
+    /threads  - specify maximum number of parallel threads  (default=25)
+    /ldap     - query hosts from the following LDAP filters (default=all)
+         :all - All enabled computers with 'primary' group 'Domain Computers'
+         :dc  - All enabled Domain Controllers
+         :exclude-dc - All enabled computers that are not Domain Controllers
+         :servers - All enabled servers
+         :servers-exclude-dc - All enabled servers excluding DCs
+    /ou       - specify LDAP OU to query enabled computer objects from
+                ex: "OU=Special Servers,DC=example,DC=local"
+    /filter   - exclude SYSVOL, NETLOGON, and print$ shares
+    /outfile  - specify file for shares to be appended to instead of printing to std out
     /verbose  - return unauthorized shares
 ```
 
@@ -28,8 +37,13 @@ execute-assembly /path/to/SharpShares.exe
 ```
 [+] Parsed Aguments:
         threads: 25
+        ldap: all
+        ou: none
         filter: False
         verbose: False
+        outfile:
+[+] LDAP Search Description: All enabled computers with primary group 'Domain Computers'
+[+] LDAP Search Results: 10
 [*] Collected 10 enabled computer objects.
 [*] Starting share enumeration with thread limit of 25
 [r] = Readable Share
