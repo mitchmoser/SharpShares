@@ -142,29 +142,29 @@ namespace SharpShares
 
                 DirectoryEntry entry = new DirectoryEntry();
                 DirectorySearcher mySearcher = new DirectorySearcher(entry);
-
+                string description = null;
                 //https://social.technet.microsoft.com/wiki/contents/articles/5392.active-directory-ldap-syntax-filters.aspx
                 //https://ldapwiki.com/wiki/Active%20Directory%20Computer%20Related%20LDAP%20Query
                 switch (filter)
                 {
                     case "all":
-                        //All enabled computers with "primary" group "Domain Computers"
+                        description = "All enabled computers with primary group 'Domain Computers'";
                         mySearcher.Filter = ("(&(objectCategory=computer)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))");
                         break;
                     case "dc":
-                        //All enabled Domain Controllers
+                        description = "All enabled Domain Controllers";
                         mySearcher.Filter = ("(&(objectCategory=computer)(!(userAccountControl:1.2.840.113556.1.4.803:=2))(userAccountControl:1.2.840.113556.1.4.803:=8192))");
                         break;
                     case "exclude-dc":
-                        //All enabled computers that are not Domain Controllers
+                        description = "All enabled computers that are not Domain Controllers";
                         mySearcher.Filter = ("(&(objectCategory=computer)(!(userAccountControl:1.2.840.113556.1.4.803:=2))(!(userAccountControl:1.2.840.113556.1.4.803:=8192)))");
                         break;
                     case "servers":
-                        //All enabled servers
+                        description = "All enabled servers";
                         mySearcher.Filter = ("(&(objectCategory=computer)(!(userAccountControl:1.2.840.113556.1.4.803:=2))(operatingSystem=*server*))");
                         break;
                     case "servers-exclude-dc":
-                        //All enabled servers excluding DCs
+                        description = "All enabled servers excluding DCs";
                         mySearcher.Filter = ("(&(objectCategory=computer)(!(userAccountControl:1.2.840.113556.1.4.803:=2))(operatingSystem=*server*)(!(userAccountControl:1.2.840.113556.1.4.803:=8192)))");
                         break;
                     default:
@@ -185,6 +185,7 @@ namespace SharpShares
                     ComputerNames.Add(ComputerName);
                     counter += 1;
                 }
+                Console.WriteLine("[+] LDAP Search Description: {0}", description);
                 Console.WriteLine("[+] LDAP Search Results: {0}", counter.ToString());
                 mySearcher.Dispose();
                 entry.Dispose();
@@ -404,8 +405,8 @@ Usage:
     SharpShares.exe /threads:50 /ldap:servers /ou:""OU=Special Servers,DC=example,DC=local"" /filter /verbose /outfile:C:\path\to\file.txt
 
 Optional Arguments:
-    /threads  - specify maximum number of parallel threads (default=25)
-    /ldap     - query hosts from the following LDAP filters: (default=all)
+    /threads  - specify maximum number of parallel threads  (default=25)
+    /ldap     - query hosts from the following LDAP filters (default=all)
          :all - All enabled computers with 'primary' group 'Domain Computers'
          :dc  - All enabled Domain Controllers
          :exclude-dc - All enabled computers that are not Domain Controllers
@@ -423,10 +424,13 @@ Optional Arguments:
         {
             Console.WriteLine("[+] Parsed Aguments:");
             Console.WriteLine("\tthreads: {0}", threads.ToString());
+            if (String.IsNullOrEmpty(ldapFilter)) { ldapFilter = "all"; }
             Console.WriteLine("\tldap: {0}", ldapFilter);
+            if (String.IsNullOrEmpty(ou)) { ou = "none"; }
             Console.WriteLine("\tou: {0}", ou);
             Console.WriteLine("\tfilter: {0}", filter.ToString());
-            Console.WriteLine("\tverbose: {0}", filter.ToString());
+            Console.WriteLine("\tverbose: {0}", verbose.ToString());
+            if (String.IsNullOrEmpty(outfile)) { ldapFilter = "none"; }
             Console.WriteLine("\toutfile: {0}", outfile);
         }
 
@@ -463,13 +467,6 @@ Optional Arguments:
                 List<string> results = SearchOU(ou, verbose);
                 hosts = hosts.Concat(results).ToList();
             }
-            // if no ldap or ou filter specified, search all enabled computer objects
-            if (!(parsedArgs.ContainsKey("/ldap")) && !(parsedArgs.ContainsKey("/ou")))
-            {
-                ldapFilter = "all";
-                List<string> ldap = SearchLDAP(ldapFilter, verbose);
-                hosts = hosts.Concat(ldap).ToList();
-            }
             int threads = 25;
             if (parsedArgs.ContainsKey("/threads"))
             {
@@ -480,9 +477,16 @@ Optional Arguments:
                 Usage();
                 Environment.Exit(0);
             }
+            PrintOptions(threads, ldapFilter, ou, filter, verbose, outfile);
+            // if no ldap or ou filter specified, search all enabled computer objects
+            if (!(parsedArgs.ContainsKey("/ldap")) && !(parsedArgs.ContainsKey("/ou")))
+            {
+                ldapFilter = "all";
+                List<string> ldap = SearchLDAP(ldapFilter, verbose);
+                hosts = hosts.Concat(ldap).ToList();
+            }
             //remove duplicate hosts
             hosts = hosts.Distinct().ToList();
-            PrintOptions(threads, ldapFilter, ou, filter, verbose, outfile);
             if (!String.IsNullOrEmpty(outfile))
             {
                 if (!File.Exists(outfile))
@@ -497,6 +501,8 @@ Optional Arguments:
                 }
             }
             Console.WriteLine("[*] Collected {0} enabled computer objects.", hosts.Count);
+            if (filter) { Console.WriteLine("[*] Excluding SYSVOL, NETLOGON, and print$ shares"); }
+            if (verbose) { Console.WriteLine("[*] Including unreadable shares"); }
             Console.WriteLine("[*] Starting share enumeration with thread limit of {0}", threads.ToString());
             Console.WriteLine("[r] = Readable Share\n[w] = Writeable Share\n[-] = Unauthorized Share (requires /verbose flag)\n");
             GetAllShares(hosts, threads, verbose, filter, outfile);
