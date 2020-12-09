@@ -374,7 +374,7 @@ namespace SharpShares
         {
             Dictionary<string, string[]> result = new Dictionary<string, string[]>();
             //these boolean variables aren't passed w/ values. If passed, they are "true"
-            string[] booleans = new string[] { "/verbose" };
+            string[] booleans = new string[] { "/verbose", "/stealth" };
             var argList = new List<string>();
             foreach (string arg in args)
             {
@@ -430,7 +430,7 @@ Optional Arguments:
             Console.WriteLine("\tldap: {0}", ldapFilter);
             if (String.IsNullOrEmpty(ou)) { ou = "none"; }
             Console.WriteLine("\tou: {0}", ou);
-            Console.WriteLine("\tfilter: {0}", filter.ToString());
+            Console.WriteLine("\tfilter: {0}", String.Join(",",filter));
             Console.WriteLine("\tstealth: {0}", stealth.ToString()); 
             Console.WriteLine("\tverbose: {0}", verbose.ToString());
             if (String.IsNullOrEmpty(outfile)) { ldapFilter = "none"; }
@@ -508,9 +508,9 @@ Optional Arguments:
                 }
             }
             //Console.WriteLine("[*] Collected {0} enabled computer objects.", hosts.Count);
-            if (filter.Count > 0) { Console.WriteLine("[*] Excluding SYSVOL, NETLOGON, IPC$, and print$ shares"); }
-            if (verbose) { Console.WriteLine("[*] Including unreadable shares"); }
             PrintOptions(threads, ldapFilter, ou, filter, stealth, verbose, outfile);
+            if (filter.Count > 0) { Console.WriteLine("[*] Excluding {0} shares", String.Join(",", filter)); }
+            if (verbose) { Console.WriteLine("[*] Including unreadable shares"); }
             Console.WriteLine("[*] Starting share enumeration with thread limit of {0}", threads.ToString());
             Console.WriteLine("[r] = Readable Share\n[w] = Writeable Share\n[-] = Unauthorized Share (requires /verbose flag)\n[?] = Unchecked Share (requires /stealth flag)\n");
             GetAllShares(hosts, threads, verbose, filter, stealth, outfile);
