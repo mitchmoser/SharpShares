@@ -6,13 +6,8 @@ Built upon [djhohnstein's SharpShares](https://github.com/djhohnstein/SharpShare
 ```
 > .\SharpShares.exe help
 
-█▀ █ █ ▄▀█ █▀█ █▀█ █▀ █ █ ▄▀█ █▀█ █▀▀ █▀
-▄█ █▀█ █▀█ █▀▄ █▀▀ ▄█ █▀█ █▀█ █▀▄ ██▄ ▄█
-
 Usage:
-    SharpShares.exe
-    or w/ optional arguments:
-    SharpShares.exe /threads:50 /ldap:servers /ou:"OU=Special Servers,DC=example,DC=local" /filter /verbose /outfile:C:\path\to\file.txt
+    SharpShares.exe /threads:50 /ldap:servers /ou:"OU=Special Servers,DC=example,DC=local" /filter:SYSVOL,NETLOGON,IPC$,PRINT$ /verbose /outfile:C:\path\to\file.txt
 
 Optional Arguments:
     /threads  - specify maximum number of parallel threads  (default=25)
@@ -24,7 +19,9 @@ Optional Arguments:
          :servers-exclude-dc - All enabled servers excluding DCs
     /ou       - specify LDAP OU to query enabled computer objects from
                 ex: "OU=Special Servers,DC=example,DC=local"
-    /filter   - exclude SYSVOL, NETLOGON, and print$ shares
+    /stealth  - list share names without performing read/write access checks
+    /filter   - list of comma-separated shares to exclude from enumeration
+                recommended: SYSVOL,NETLOGON,IPC$,print$
     /outfile  - specify file for shares to be appended to instead of printing to std out
     /verbose  - return unauthorized shares
 ```
@@ -35,16 +32,18 @@ execute-assembly /path/to/SharpShares.exe
 ```
 ## Example Output
 ```
+[+] LDAP Search Description: All enabled computers with primary group 'Domain Computers'
+[+] LDAP Search Results: 10
 [+] Parsed Aguments:
         threads: 25
         ldap: all
         ou: none
-        filter: False
+        filter: SYSVOL,NETLOGON,IPC$,PRINT$
+        stealth: False
         verbose: False
         outfile:
-[+] LDAP Search Description: All enabled computers with primary group 'Domain Computers'
-[+] LDAP Search Results: 10
-[*] Collected 10 enabled computer objects.
+
+[*] Excluding SYSVOL,NETLOGON,IPC$,PRINT$ shares
 [*] Starting share enumeration with thread limit of 25
 [r] = Readable Share
 [w] = Writeable Share
@@ -53,9 +52,7 @@ execute-assembly /path/to/SharpShares.exe
 [r] \\DC-01\CertEnroll
 [r] \\DC-01\File History Backups
 [r] \\DC-01\Folder Redirection
-[r] \\DC-01\NETLOGON
 [r] \\DC-01\Shared Folders
-[r] \\DC-01\SYSVOL
 [r] \\DC-01\Users
 [w] \\WEB-01\wwwroot
 [r] \\DESKTOP\ADMIN$
