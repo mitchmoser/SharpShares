@@ -28,12 +28,10 @@ Optional Arguments:
 
 ## Execute Assembly
 ```
-execute-assembly /path/to/SharpShares.exe
+execute-assembly /path/to/SharpShares.exe /ldap:all /filter:sysvol,netlogon,ipc$,print$
 ```
 ## Example Output
 ```
-[+] LDAP Search Description: All enabled computers with primary group 'Domain Computers'
-[+] LDAP Search Results: 10
 [+] Parsed Aguments:
         threads: 25
         ldap: all
@@ -48,6 +46,12 @@ execute-assembly /path/to/SharpShares.exe
 [r] = Readable Share
 [w] = Writeable Share
 [-] = Unauthorized Share (requires /verbose flag)
+[?] = Unchecked Share (requires /stealth flag)
+
+[+] Performing LDAP query for all enabled computers with "primary" group "Domain Computers"...
+[+] This may take some time depending on the size of the environment
+[+] LDAP Search Results: 10
+[+] Starting share enumeration against 10 hosts
 
 [r] \\DC-01\CertEnroll
 [r] \\DC-01\File History Backups
