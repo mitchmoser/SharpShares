@@ -30,7 +30,6 @@ namespace SharpShares.Utilities
                         break;
                     case "exclude-dc":
                         description = "all enabled computers that are not Domain Controllers or read-only DCs";
-                        mySearcher.Filter = ("(&(objectCategory=computer)(!(userAccountControl:1.2.840.113556.1.4.803:=2))(!(userAccountControl:1.2.840.113556.1.4.803:=8192)))");
                         mySearcher.Filter = ("(&(objectCategory=computer)(!(userAccountControl:1.2.840.113556.1.4.803:=2))(!(userAccountControl:1.2.840.113556.1.4.803:=8192))(!(userAccountControl:1.2.840.113556.1.4.803:=67100867)))");
                         break;
                     case "servers":
@@ -38,8 +37,8 @@ namespace SharpShares.Utilities
                         mySearcher.Filter = ("(&(objectCategory=computer)(!(userAccountControl:1.2.840.113556.1.4.803:=2))(operatingSystem=*server*))");
                         break;
                     case "servers-exclude-dc":
-                        description = "all enabled servers excluding DCs";
-                        mySearcher.Filter = ("(&(objectCategory=computer)(!(userAccountControl:1.2.840.113556.1.4.803:=2))(operatingSystem=*server*)(!(userAccountControl:1.2.840.113556.1.4.803:=8192)))");
+                        description = "all enabled servers excluding Domain Controllers or read-only DCs";
+                        mySearcher.Filter = ("(&(objectCategory=computer)(!(userAccountControl:1.2.840.113556.1.4.803:=2))(operatingSystem=*server*)(!(userAccountControl:1.2.840.113556.1.4.803:=8192))(!(userAccountControl:1.2.840.113556.1.4.803:=67100867)))");
                         break;
                     default:
                         Console.WriteLine("[!] Invalid LDAP filter: {0}", filter);

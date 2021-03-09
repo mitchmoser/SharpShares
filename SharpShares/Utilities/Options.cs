@@ -162,7 +162,7 @@ Optional Arguments:
          :dc  - All enabled Domain Controllers (not read-only DCs)
          :exclude-dc - All enabled computers that are not Domain Controllers or read-only DCs
          :servers - All enabled servers
-         :servers-exclude-dc - All enabled servers excluding DCs
+         :servers-exclude-dc - All enabled servers excluding Domain Controllers or read-only DCs
     /ou       - specify LDAP OU to query enabled computer objects from
                 ex: ""OU=Special Servers,DC=example,DC=local""
     /stealth  - list share names without performing read/write access checks
