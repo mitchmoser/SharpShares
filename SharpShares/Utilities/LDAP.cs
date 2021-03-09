@@ -25,12 +25,13 @@ namespace SharpShares.Utilities
                         mySearcher.Filter = ("(&(objectCategory=computer)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))");
                         break;
                     case "dc":
-                        description = "all enabled Domain Controllers";
+                        description = "all enabled Domain Controllers (not read-only DCs)";
                         mySearcher.Filter = ("(&(objectCategory=computer)(!(userAccountControl:1.2.840.113556.1.4.803:=2))(userAccountControl:1.2.840.113556.1.4.803:=8192))");
                         break;
                     case "exclude-dc":
-                        description = "all enabled computers that are not Domain Controllers";
+                        description = "all enabled computers that are not Domain Controllers or read-only DCs";
                         mySearcher.Filter = ("(&(objectCategory=computer)(!(userAccountControl:1.2.840.113556.1.4.803:=2))(!(userAccountControl:1.2.840.113556.1.4.803:=8192)))");
+                        mySearcher.Filter = ("(&(objectCategory=computer)(!(userAccountControl:1.2.840.113556.1.4.803:=2))(!(userAccountControl:1.2.840.113556.1.4.803:=8192))(!(userAccountControl:1.2.840.113556.1.4.803:=67100867)))");
                         break;
                     case "servers":
                         description = "all enabled servers";
