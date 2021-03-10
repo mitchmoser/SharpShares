@@ -63,3 +63,8 @@ execute-assembly /path/to/SharpShares.exe /ldap:all /filter:sysvol,netlogon,ipc$
 [r] \\DESKTOP\C$
 [+] Finished Enumerating Shares
 ```
+Specifying Targets
+
+The `/ldap` and `/ou` flags can be used together or seprately to generate a list of hosts to enumerate.
+
+All hosts returned from these flags are combined and deduplicated before enumeration starts.
