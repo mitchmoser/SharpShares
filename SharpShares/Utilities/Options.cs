@@ -99,38 +99,33 @@ namespace SharpShares.Utilities
             }
             return arguments;
         }
-        public static void PrintOptions(int threads, string ldapFilter, string ou, List<string> filter, bool stealth, bool verbose, string outfile)
+        public static void PrintOptions(Utilities.Options.Arguments arguments)
         {
             Console.WriteLine("[+] Parsed Arguments:");
-            if (filter == null)
-            {
-                Console.WriteLine("\tfilter: none");
-            }
+            Console.WriteLine("\tfilter: none");
+            if (arguments.filter != null)
+                Console.WriteLine($"\tfilter: {String.Join(",", arguments.filter)}");
             else
-            {
-                Console.WriteLine("\tfilter: {0}", String.Join(",", filter));
-            }
-            if (String.IsNullOrEmpty(ldapFilter)) { ldapFilter = "none"; }
-            Console.WriteLine("\tldap: {0}", ldapFilter);
-            if (String.IsNullOrEmpty(ou)) { ou = "none"; }
-            Console.WriteLine("\tou: {0}", ou);
-            Console.WriteLine("\tstealth: {0}", stealth.ToString());
-            Console.WriteLine("\tthreads: {0}", threads.ToString());
-            Console.WriteLine("\tverbose: {0}", verbose.ToString());
-            if (String.IsNullOrEmpty(outfile))
+                Console.WriteLine($"\tfilter: none");
+            Console.WriteLine($"\tldap: {arguments.ldap}");
+            Console.WriteLine($"\tou: {arguments.ou}");
+            Console.WriteLine($"\tstealth: {arguments.stealth.ToString()}");
+            Console.WriteLine($"\tthreads: {arguments.threads.ToString()}");
+            Console.WriteLine($"\tverbose: {arguments.verbose.ToString()}");
+            if (String.IsNullOrEmpty(arguments.outfile))
             { 
                 Console.WriteLine("\toutfile: none");
             }
             else
             {
-                Console.WriteLine("\toutfile: {0}", outfile);
-                if (!File.Exists(outfile))
+                Console.WriteLine($"\toutfile: {arguments.outfile}");
+                if (!File.Exists(arguments.outfile))
                 {
                     try
                     {
                         // Create a file to write to if it doesn't exist
-                        using (StreamWriter sw = File.CreateText(outfile)) { };
-                        Console.WriteLine("[+] {0} Created", outfile);
+                        using (StreamWriter sw = File.CreateText(arguments.outfile)) { };
+                        Console.WriteLine($"[+] {arguments.outfile} Created");
                     }
                     catch (Exception ex)
                     {
@@ -140,9 +135,14 @@ namespace SharpShares.Utilities
                 }
                 else
                 {
-                    Console.WriteLine("[!] {0} already esists. Appending to file", outfile);
+                    Console.WriteLine($"[!] {arguments.outfile} already esists. Appending to file");
                 }
             }
+            if (arguments.filter != null) { Console.WriteLine("[*] Excluding {0} shares", String.Join(",", arguments.filter)); }
+            if (arguments.verbose) { Console.WriteLine("[*] Including unreadable shares"); }
+            Console.WriteLine("[*] Starting share enumeration with thread limit of {0}", arguments.threads.ToString());
+            Console.WriteLine("[r] = Readable Share\n[w] = Writeable Share\n[-] = Unauthorized Share (requires /verbose flag)\n[?] = Unchecked Share (requires /stealth flag)\n");
+
 
         }
         public static void Usage()

@@ -115,7 +115,7 @@ namespace SharpShares.Enums
             }
         }
 
-        public static void GetComputerShares(string computer, bool verbose, List<string> filter, bool stealth, string outfile)
+        public static void GetComputerShares(string computer, Utilities.Options.Arguments argumetns)
         {
             //Error 53 - network path was not found
             //Error 5 - Access Denied
@@ -131,12 +131,12 @@ namespace SharpShares.Enums
                 string userSID = identity.User.Value;
                 foreach (SHARE_INFO_1 share in computerShares)// <------------ go to next share -----------+
                 {                                                                                       // |
-                    if ((filter !=null) && (filter.Contains(share.shi1_netname.ToString().ToUpper())))  // |
+                    if ((argumetns.filter != null) && (argumetns.filter.Contains(share.shi1_netname.ToString().ToUpper())))  // |
                     {                                                                                   // |
                         continue; // Skip the remainder of this iteration. --------------------------------+
                     }
                     //share.shi1_netname returns the error code when caught
-                    if (stealth && !errors.Contains(share.shi1_netname))
+                    if (argumetns.stealth && !errors.Contains(share.shi1_netname))
                     {
                         Console.WriteLine("[?] \\\\{0}\\{1}", computer, share.shi1_netname);
                         continue; //do not perform access checks
@@ -182,17 +182,11 @@ namespace SharpShares.Enums
                     foreach (string share in readableShares)
                     {
                         string output = String.Format("[r] \\\\{0}\\{1}", computer, share);
-                        if (!String.IsNullOrEmpty(outfile))
+                        if (!String.IsNullOrEmpty(argumetns.outfile))
                         {
                             try
                             {
-                                WriteToFileThreadSafe(output, outfile);
-                                /*
-                                using (StreamWriter sw = File.AppendText(outfile))
-                                {
-                                    sw.WriteLine(output);
-                                }
-                                */
+                                WriteToFileThreadSafe(output, argumetns.outfile);
                             }
                             catch (Exception ex)
                             {
@@ -211,17 +205,11 @@ namespace SharpShares.Enums
                     foreach (string share in writeableShares)
                     {
                         string output = String.Format("[w] \\\\{0}\\{1}", computer, share);
-                        if (!String.IsNullOrEmpty(outfile))
+                        if (!String.IsNullOrEmpty(argumetns.outfile))
                         {
                             try
                             {
-                                WriteToFileThreadSafe(output, outfile);
-                                /*
-                                using (StreamWriter sw = File.AppendText(outfile))
-                                {
-                                    sw.WriteLine(output);
-                                }
-                                */
+                                WriteToFileThreadSafe(output, argumetns.outfile);
                             }
                             catch (Exception ex)
                             {
@@ -235,22 +223,16 @@ namespace SharpShares.Enums
                         }
                     }
                 }
-                if (verbose && unauthorizedShares.Count > 0)
+                if (argumetns.verbose && unauthorizedShares.Count > 0)
                 {
                     foreach (string share in unauthorizedShares)
                     {
                         string output = String.Format("[-] \\\\{0}\\{1}", computer, share);
-                        if (!String.IsNullOrEmpty(outfile))
+                        if (!String.IsNullOrEmpty(argumetns.outfile))
                         {
                             try
                             {
-                                WriteToFileThreadSafe(output, outfile);
-                                /*
-                                using (StreamWriter sw = File.AppendText(outfile))
-                                {
-                                    sw.WriteLine(output);
-                                }
-                                */
+                                WriteToFileThreadSafe(output, argumetns.outfile);
                             }
                             catch (Exception ex)
                             {
@@ -265,6 +247,7 @@ namespace SharpShares.Enums
                     }
                 }
             }
+            Utilities.Status.currentCount += 1;
         }
         
         public static ReaderWriterLockSlim _readWriteLock = new ReaderWriterLockSlim();
@@ -288,16 +271,16 @@ namespace SharpShares.Enums
                 _readWriteLock.ExitWriteLock();
             }
         }
-        public static void GetAllShares(List<string> computers, int threads, bool verbose, List<string> filter, bool stealth, string outfile)
+        public static void GetAllShares(List<string> computers, Utilities.Options.Arguments arguments)
         {
             Console.WriteLine("[+] Starting share enumeration against {0} hosts\n", computers.Count);
             //https://blog.danskingdom.com/limit-the-number-of-c-tasks-that-run-in-parallel/
             var threadList = new List<Action>();
             foreach (string computer in computers)
             {
-                threadList.Add(() => GetComputerShares(computer, verbose, filter, stealth, outfile));
+                threadList.Add(() => GetComputerShares(computer, arguments));
             }
-            var options = new ParallelOptions { MaxDegreeOfParallelism = threads };
+            var options = new ParallelOptions { MaxDegreeOfParallelism = arguments.threads };
             Parallel.Invoke(options, threadList.ToArray());
             Console.WriteLine("[+] Finished Enumerating Shares");
         }
