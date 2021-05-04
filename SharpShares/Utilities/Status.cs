@@ -16,7 +16,7 @@ namespace SharpShares.Utilities
         {
             PrintStatus();
             //Interval to display progress during enumeration in milliseconds (Default: 30000)
-            int statusInterval = 10000;
+            int statusInterval = 30000;
             statusTimer = new Timer(statusInterval);
             runTimer = new Stopwatch();
             runTimer.Start();
