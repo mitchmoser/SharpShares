@@ -69,7 +69,7 @@ namespace SharpShares.Utilities
                                 Console.WriteLine($"[!] LDAP Error connecting to Global Catalog: {ex.Message.Trim()}");
                                 string directoryEntry = $"LDAP://{arguments.dc}/DC={arguments.domain.Replace(".", ",DC=")}";
                                 Console.WriteLine($"[+] Querying DC without Global Catalog: {directoryEntry}");
-                                entry = new DirectoryEntry("LDAP://DC-01.initech.local/DC=initech,DC=local");
+                                entry = new DirectoryEntry(directoryEntry);
                                 globalCatalogSearcher = new DirectorySearcher(entry);
                             }
                         else
@@ -108,8 +108,23 @@ namespace SharpShares.Utilities
                 {
                     try
                     {
-                        DirectoryEntry entry = new DirectoryEntry();
-                        DirectorySearcher mySearcher = new DirectorySearcher(entry);
+                        DirectoryEntry entry = null;
+                        DirectorySearcher mySearcher = null;
+                        if (!String.IsNullOrEmpty(arguments.dc) && !String.IsNullOrEmpty(arguments.domain))
+                        {
+                            string directoryEntry = $"LDAP://{arguments.dc}/DC={arguments.domain.Replace(".", ",DC=")}";
+                            Console.WriteLine($"[+] Performing LDAP query against {directoryEntry} for {description}...");
+                            Console.WriteLine("[+] This may take some time depending on the size of the environment");
+                            entry = new DirectoryEntry(directoryEntry);
+                            mySearcher = new DirectorySearcher(entry);
+
+                        }
+                        else
+                        {
+                            entry = new DirectoryEntry();
+                            mySearcher = new DirectorySearcher(entry);
+                        }
+                        
                         mySearcher.PropertiesToLoad.Add("dnshostname");
                         mySearcher.Filter = filter;
                         mySearcher.SizeLimit = int.MaxValue;
@@ -158,9 +173,32 @@ namespace SharpShares.Utilities
             try
             {
                 List<string> ComputerNames = new List<string>();
-                string searchbase = "LDAP://" + arguments.ou;//OU=Domain Controllers,DC=example,DC=local";
-                DirectoryEntry entry = new DirectoryEntry(searchbase);
-                DirectorySearcher mySearcher = new DirectorySearcher(entry);
+                DirectoryEntry entry = null;
+                DirectorySearcher mySearcher = null;
+                if (!String.IsNullOrEmpty(arguments.dc) && !String.IsNullOrEmpty(arguments.domain))
+                {
+                    try
+                    {
+                        string directoryEntry = $"GC://{arguments.dc}/DC={arguments.domain.Replace(".", ",DC=")}";
+                        Console.WriteLine($"[+] Attempting to connect to Global Catalog: {directoryEntry}");
+                        entry = new DirectoryEntry(directoryEntry);
+                        mySearcher = new DirectorySearcher(entry);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[!] LDAP Error connecting to Global Catalog: {ex.Message.Trim()}");
+                        string directoryEntry = $"LDAP://{arguments.dc}/DC={arguments.domain.Replace(".", ",DC=")}";
+                        Console.WriteLine($"[+] Querying DC without Global Catalog: {directoryEntry}");
+                        entry = new DirectoryEntry(directoryEntry);
+                        mySearcher = new DirectorySearcher(entry);
+                    }
+                }
+                else
+                {
+                    string searchbase = "LDAP://" + arguments.ou;//OU=Domain Controllers,DC=example,DC=local";
+                    entry = new DirectoryEntry(searchbase);
+                    mySearcher = new DirectorySearcher(entry);
+                }
                 mySearcher.PropertiesToLoad.Add("dnshostname");
                 // filter for all enabled computers
                 mySearcher.Filter = ("(&(objectCategory=computer)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))");
