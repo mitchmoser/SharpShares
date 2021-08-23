@@ -13,22 +13,30 @@ namespace SharpShares
             List<string> hosts = new List<string>();
             var parsedArgs = Utilities.Options.ParseArgs(args);
             Utilities.Options.Arguments arguments = Utilities.Options.ArgumentValues(parsedArgs);
-            Utilities.Options.PrintOptions(arguments);
-            if (!String.IsNullOrEmpty(arguments.ldap))
+            if (arguments != null)
             {
-                List<string> ldap = Utilities.LDAP.SearchLDAP(arguments.ldap, arguments.verbose);
-                hosts = hosts.Concat(ldap).ToList();
+                bool success = Utilities.Options.PrintOptions(arguments);
+                if (success)
+                {
+                    if (!String.IsNullOrEmpty(arguments.ldap))
+                    {
+                        List<string> ldap = Utilities.LDAP.SearchLDAP(arguments);
+                        if (ldap != null)
+                            hosts = hosts.Concat(ldap).ToList();
+                    }
+                    if (!String.IsNullOrEmpty(arguments.ou))
+                    {
+                        List<string> ou = Utilities.LDAP.SearchOU(arguments);
+                        if (ou != null) 
+                            hosts = hosts.Concat(ou).ToList();
+                    }
+                    //remove duplicate hosts
+                    hosts = hosts.Distinct().ToList();
+                    Utilities.Status.totalCount = hosts.Count;
+                    Utilities.Status.StartOutputTimer();
+                    Enums.Shares.GetAllShares(hosts, arguments);
+                }
             }
-            if (!String.IsNullOrEmpty(arguments.ou))
-            {
-                List<string> ou = Utilities.LDAP.SearchOU(arguments.ou, arguments.verbose);
-                hosts = hosts.Concat(ou).ToList();
-            }
-            //remove duplicate hosts
-            hosts = hosts.Distinct().ToList();
-            Utilities.Status.totalCount = hosts.Count;
-            Utilities.Status.StartOutputTimer();
-            Enums.Shares.GetAllShares(hosts, arguments);
         }
     }
 }

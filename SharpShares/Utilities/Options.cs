@@ -16,7 +16,9 @@ namespace SharpShares.Utilities
             public bool validate = false;
             public bool verbose = false;
             public int threads = 25;
-            public List<string> filter = null;
+            public List<string> filter = new List<string> { "SYSVOL", "NETLOGON", "IPC$", "print$" };
+            public string dc = null;
+            public string domain = null;
             public string ldap = null;
             public string ou = null;
             public string outfile = null;
@@ -49,6 +51,14 @@ namespace SharpShares.Utilities
         public static Arguments ArgumentValues(Dictionary<string, string[]> parsedArgs)
         {
             Arguments arguments = new Arguments();
+            if (parsedArgs.ContainsKey("/dc"))
+            {
+                arguments.dc = parsedArgs["/dc"][0];
+            }
+            if (parsedArgs.ContainsKey("/domain"))
+            {
+                arguments.domain = parsedArgs["/domain"][0];
+            }
             if (parsedArgs.ContainsKey("/filter"))
             {
                 arguments.filter = parsedArgs["/filter"][0].ToUpper().Split(',').ToList();
@@ -88,25 +98,30 @@ namespace SharpShares.Utilities
             if (parsedArgs.ContainsKey("help"))
             {
                 Usage();
-                Environment.Exit(0);
+                //Environment.Exit(0);
+                arguments = null;
             }
             // if no ldap or ou filter specified, search all enabled computer objects
             if (!(parsedArgs.ContainsKey("/ldap")) && !(parsedArgs.ContainsKey("/ou")))
             {
                 Console.WriteLine("[!] Must specify hosts using one of the following arguments: /ldap /ou");
                 Utilities.Options.Usage();
-                Environment.Exit(0);
+                //Environment.Exit(0);
+                arguments = null;
             }
             return arguments;
         }
-        public static void PrintOptions(Utilities.Options.Arguments arguments)
+        public static bool PrintOptions(Utilities.Options.Arguments arguments)
         {
+            bool success = true;
             Console.WriteLine("[+] Parsed Arguments:");
             Console.WriteLine("\tfilter: none");
             if (arguments.filter != null)
                 Console.WriteLine($"\tfilter: {String.Join(",", arguments.filter)}");
             else
                 Console.WriteLine($"\tfilter: none");
+            Console.WriteLine($"\tdc: {arguments.dc}");
+            Console.WriteLine($"\tdomain: {arguments.domain}");
             Console.WriteLine($"\tldap: {arguments.ldap}");
             Console.WriteLine($"\tou: {arguments.ou}");
             Console.WriteLine($"\tstealth: {arguments.stealth.ToString()}");
@@ -130,7 +145,8 @@ namespace SharpShares.Utilities
                     catch (Exception ex)
                     {
                         Console.WriteLine("[!] Outfile Error: {0}", ex.Message);
-                        Environment.Exit(0);
+                        //Environment.Exit(0);
+                        success = false;
                     }
                 }
                 else
@@ -142,8 +158,8 @@ namespace SharpShares.Utilities
             if (arguments.verbose) { Console.WriteLine("[*] Including unreadable shares"); }
             Console.WriteLine("[*] Starting share enumeration with thread limit of {0}", arguments.threads.ToString());
             Console.WriteLine("[r] = Readable Share\n[w] = Writeable Share\n[-] = Unauthorized Share (requires /verbose flag)\n[?] = Unchecked Share (requires /stealth flag)\n");
-
-
+            
+            return success;
         }
         public static void Usage()
         {
@@ -167,7 +183,7 @@ Optional Arguments:
                 ex: ""OU=Special Servers,DC=example,DC=local""
     /stealth  - list share names without performing read/write access checks
     /filter   - list of comma-separated shares to exclude from enumeration
-                recommended: SYSVOL,NETLOGON,IPC$,print$
+                default: SYSVOL,NETLOGON,IPC$,print$
     /outfile  - specify file for shares to be appended to instead of printing to std out 
     /verbose  - return unauthorized shares
 ";

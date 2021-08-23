@@ -191,7 +191,7 @@ namespace SharpShares.Enums
                             catch (Exception ex)
                             {
                                 Console.WriteLine("[!] Outfile Error: {0}", ex.Message);
-                                Environment.Exit(0);
+                                //Environment.Exit(0);
                             }
                         }
                         else
@@ -214,7 +214,7 @@ namespace SharpShares.Enums
                             catch (Exception ex)
                             {
                                 Console.WriteLine("[!] Outfile Error: {0}", ex.Message);
-                                Environment.Exit(0);
+                                //Environment.Exit(0);
                             }
                         }
                         else
@@ -237,7 +237,7 @@ namespace SharpShares.Enums
                             catch (Exception ex)
                             {
                                 Console.WriteLine("[!] Outfile Error: {0}", ex.Message);
-                                Environment.Exit(0);
+                                //Environment.Exit(0);
                             }
                         }
                         else

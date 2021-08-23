@@ -8,7 +8,7 @@ namespace SharpShares.Utilities
 {
     class LDAP
     {
-        public static List<string> SearchLDAP(string ldap, bool verbose)
+        public static List<string> SearchLDAP(Utilities.Options.Arguments arguments)
         {
             try
             {
@@ -19,7 +19,7 @@ namespace SharpShares.Utilities
 
                 //https://social.technet.microsoft.com/wiki/contents/articles/5392.active-directory-ldap-syntax-filters.aspx
                 //https://ldapwiki.com/wiki/Active%20Directory%20Computer%20Related%20LDAP%20Query
-                switch (ldap)
+                switch (arguments.ldap)
                 {
                     case "all":
                         description = "all enabled computers with \"primary\" group \"Domain Computers\"";
@@ -46,17 +46,38 @@ namespace SharpShares.Utilities
                     default:
                         Console.WriteLine("[!] Invalid LDAP filter: {0}", filter);
                         Utilities.Options.Usage();
-                        Environment.Exit(0);
-                        break;
+                        //Environment.Exit(0);
+                        return null;
                 }
 
                 if (searchGlobalCatalog)
                 {
                     try
                     {
-                        Forest currentForest = Forest.GetCurrentForest();
-                        GlobalCatalog globalCatalog = currentForest.FindGlobalCatalog();
-                        DirectorySearcher globalCatalogSearcher = globalCatalog.GetDirectorySearcher();
+                        DirectoryEntry entry = null;
+                        DirectorySearcher globalCatalogSearcher = null;
+                        if (!String.IsNullOrEmpty(arguments.dc) && !String.IsNullOrEmpty(arguments.domain))
+                            try
+                            {
+                                string directoryEntry = $"GC://{arguments.dc}/DC={arguments.domain.Replace(".", ",DC=")}";
+                                Console.WriteLine($"[+] Attempting to connect to Global Catalog: {directoryEntry}");
+                                entry = new DirectoryEntry(directoryEntry);
+                                globalCatalogSearcher = new DirectorySearcher(entry);
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"[!] LDAP Error connecting to Global Catalog: {ex.Message.Trim()}");
+                                string directoryEntry = $"LDAP://{arguments.dc}/DC={arguments.domain.Replace(".", ",DC=")}";
+                                Console.WriteLine($"[+] Querying DC without Global Catalog: {directoryEntry}");
+                                entry = new DirectoryEntry("LDAP://DC-01.initech.local/DC=initech,DC=local");
+                                globalCatalogSearcher = new DirectorySearcher(entry);
+                            }
+                        else
+                        {
+                            Forest currentForest = Forest.GetCurrentForest();
+                            GlobalCatalog globalCatalog = currentForest.FindGlobalCatalog();
+                            globalCatalogSearcher = globalCatalog.GetDirectorySearcher();
+                        }
                         globalCatalogSearcher.PropertiesToLoad.Add("dnshostname");
                         globalCatalogSearcher.Filter = filter;
                         globalCatalogSearcher.SizeLimit = int.MaxValue;
@@ -77,7 +98,7 @@ namespace SharpShares.Utilities
                     }
                     catch (Exception ex)
                     {
-                        if (verbose)
+                        if (arguments.verbose)
                         {
                             Console.WriteLine("[!] LDAP Error searching Global Catalog: {0}", ex.Message);
                         }
@@ -110,7 +131,7 @@ namespace SharpShares.Utilities
                     }
                     catch (Exception ex)
                     {
-                        if (verbose)
+                        if (arguments.verbose)
                         {
                             Console.WriteLine("[!] LDAP Error: {0}", ex.Message);
                         }
@@ -125,19 +146,19 @@ namespace SharpShares.Utilities
             }
             catch (Exception ex)
             {
-                if (verbose)
+                if (arguments.verbose)
                 {
                     Console.WriteLine("[!] LDAP Error: {0}", ex.Message);
                 }
                 return null;
             }
         }
-        public static List<string> SearchOU(string ou, bool verbose)
+        public static List<string> SearchOU(Utilities.Options.Arguments arguments)
         {
             try
             {
                 List<string> ComputerNames = new List<string>();
-                string searchbase = "LDAP://" + ou;//OU=Domain Controllers,DC=example,DC=local";
+                string searchbase = "LDAP://" + arguments.ou;//OU=Domain Controllers,DC=example,DC=local";
                 DirectoryEntry entry = new DirectoryEntry(searchbase);
                 DirectorySearcher mySearcher = new DirectorySearcher(entry);
                 mySearcher.PropertiesToLoad.Add("dnshostname");
@@ -158,11 +179,11 @@ namespace SharpShares.Utilities
             }
             catch (Exception ex)
             {
-                if (verbose)
+                if (arguments.verbose)
                 {
                     Console.WriteLine("[!] LDAP Error: {0}", ex.Message);
                 }
-                Environment.Exit(0);
+                //Environment.Exit(0);
                 return null;
             }
         }
