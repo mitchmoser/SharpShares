@@ -11,6 +11,8 @@ Usage:
 
 Optional Arguments:
     /threads  - specify maximum number of parallel threads  (default=25)
+    /dc       - specify domain controller to query (if not ran on a domain-joined host)
+    /domain   - specify domain name (if not ran on a domain-joined host)
     /ldap     - query hosts from the following LDAP filters (default=all)
          :all - All enabled computers with 'primary' group 'Domain Computers'
          :dc  - All enabled Domain Controllers (not read-only DCs)
@@ -21,7 +23,7 @@ Optional Arguments:
                 ex: "OU=Special Servers,DC=example,DC=local"
     /stealth  - list share names without performing read/write access checks
     /filter   - list of comma-separated shares to exclude from enumeration
-                recommended: SYSVOL,NETLOGON,IPC$,print$
+                default: SYSVOL,NETLOGON,IPC$,PRINT$
     /outfile  - specify file for shares to be appended to instead of printing to std out
     /verbose  - return unauthorized shares
 ```
