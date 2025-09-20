@@ -102,7 +102,7 @@ namespace SharpShares.Utilities
                 arguments = null;
             }
             // if no ldap or ou filter specified, search all enabled computer objects
-            if (!(parsedArgs.ContainsKey("/ldap")) && !(parsedArgs.ContainsKey("/ou")))
+            if (!(parsedArgs.ContainsKey("/ldap")) && !(parsedArgs.ContainsKey("/ou")) && !(parsedArgs.ContainsKey("/targets")))
             {
                 Console.WriteLine("[!] Must specify hosts using one of the following arguments: /ldap /ou");
                 Utilities.Options.Usage();
@@ -183,6 +183,7 @@ Optional Arguments:
          :servers-exclude-dc - All enabled servers excluding Domain Controllers or read-only DCs
     /ou       - specify LDAP OU to query enabled computer objects from
                 ex: ""OU=Special Servers,DC=example,DC=local""
+    /targets  - target range provided in CIDR notation (e.g. 192.168.100.0/24) or in the format 192.168.0-255.0-255.
     /stealth  - list share names without performing read/write access checks
     /filter   - list of comma-separated shares to exclude from enumeration
                 default: SYSVOL,NETLOGON,IPC$,PRINT$

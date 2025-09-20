@@ -18,6 +18,10 @@ namespace SharpShares
                 bool success = Utilities.Options.PrintOptions(arguments);
                 if (success)
                 {
+                    if (!String.IsNullOrEmpty(arguments.targets))
+                    {
+                        hosts = new SharpShares.Utilities.IPRange(arguments.targets).GetAllIP().Select(ip => ip.ToString()).ToList();
+                    }
                     if (!String.IsNullOrEmpty(arguments.ldap))
                     {
                         List<string> ldap = Utilities.LDAP.SearchLDAP(arguments);
